@@ -22,7 +22,10 @@ module Capistrano
               previous_last_line[hostname] = lines.pop
 
               # puts with colorized hostname
-              lines.each {|line| puts colorized(hostname) + line }
+              lines.each do |line|
+                line = line.gsub(/(\[error\])/) { $1.colorize }
+                puts colorized(hostname) + line
+              end
             end
             warn "[err :: #{ch[:server]}] #{out}" if stream == :err
           end
