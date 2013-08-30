@@ -12,6 +12,7 @@ module Capistrano
         def stream_with_colorized(command, options={})
           trap("INT") { puts 'Interupted'; exit 0; }
 
+          colorize_pattern = options[:colorize]
           previous_last_line = Hash.new("")
           invoke_command(command, options) do |ch, stream, out|
             if stream == :out
@@ -21,9 +22,19 @@ module Capistrano
               lines[0] = previous_last_line[hostname] + lines[0]
               previous_last_line[hostname] = lines.pop
 
-              # puts with colorized hostname
               lines.each do |line|
-                line = line.gsub(/(\[error\])/) { $1.colorize }
+                # user defined colorize
+                colorize_pattern.each do |pattern, color|
+                  line.gsub!(Regexp.new("(#{pattern})")) do
+                    if colors.include? color
+                      $1.colorize(color)
+                    else
+                      $1
+                    end
+                  end
+                end
+
+                # puts with colorized hostname
                 puts colorized(hostname) + line
               end
             end
